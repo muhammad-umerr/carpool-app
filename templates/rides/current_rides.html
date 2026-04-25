@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="h2 text-warning mb-1">Current Rides</h1>
+        <p class="text-secondary mb-0">Track active trips and coordination details.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <section class="card shell-card p-4 h-100">
+            <h2 class="h5 text-warning mb-3">Rides You Are Driving</h2>
+            {% for ride in driving_rides %}
+                <article class="inner-panel p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                        <div>
+                            <h3 class="h6 mb-1">{{ ride.origin }} to {{ ride.destination }}</h3>
+                            <p class="mb-0 small text-secondary">{{ ride.departure_time|date:'M d, Y H:i' }}</p>
+                            <p class="mb-0 small text-secondary">Stops: {% for stop in ride.pickup_locations %}{{ stop }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                        </div>
+                        <span class="badge text-bg-warning">{{ ride.seats_available }}/{{ ride.seats_total }} seats left</span>
+                    </div>
+                    <p class="mb-2 small">Passenger contacts and pickups:</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Passenger</th>
+                                    <th>Contact</th>
+                                    <th>Pickup</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participant in ride.participants.all %}
+                                    <tr>
+                                        <td>{{ participant.user.get_full_name|default:participant.user.username }}</td>
+                                        <td>{{ participant.contact_number }}</td>
+                                        <td>{{ participant.pickup_location }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="3" class="text-secondary">No passengers yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <form method="post" action="{% url 'rides:finalize_ride' ride.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-warning btn-sm fw-semibold" type="submit">Finalize Ride</button>
+                    </form>
+                </article>
+            {% empty %}
+                <p class="text-secondary mb-0">You are not driving any active rides.</p>
+            {% endfor %}
+        </section>
+    </div>
+
+    <div class="col-xl-5">
+        <section class="card shell-card p-4 h-100">
+            <h2 class="h5 text-warning mb-3">Rides You Joined</h2>
+            {% for entry in passenger_entries %}
+                <article class="inner-panel p-3 mb-3">
+                    <h3 class="h6 mb-1">{{ entry.ride.origin }} to {{ entry.ride.destination }}</h3>
+                    <ul class="list-unstyled mb-0 small text-secondary">
+                        <li><strong>Driver:</strong> {{ entry.ride.driver.get_full_name|default:entry.ride.driver.username }}</li>
+                        <li><strong>Driver contact:</strong> {{ entry.ride.driver.email }}</li>
+                        <li><strong>Your pickup:</strong> {{ entry.pickup_location }}</li>
+                        <li><strong>Ride stops:</strong> {% for stop in entry.ride.pickup_locations %}{{ stop }}{% if not forloop.last %}, {% endif %}{% endfor %}</li>
+                        <li><strong>Departure:</strong> {{ entry.ride.departure_time|date:'M d, Y H:i' }}</li>
+                    </ul>
+                </article>
+            {% empty %}
+                <p class="text-secondary mb-0">You have not joined any active rides.</p>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+{% endblock %}

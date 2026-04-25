@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="h2 text-warning mb-1">Recent Completed Rides</h1>
+        <p class="text-secondary mb-0">Your completed trips as a driver and passenger.</p>
+    </div>
+    <span class="badge text-bg-warning fs-6">Pending payments: {{ pending_payment_count }}</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-6">
+        <section class="card shell-card p-4 h-100">
+            <h2 class="h5 text-warning mb-3">Completed as Driver</h2>
+            {% for ride in completed_as_driver %}
+                <article class="inner-panel p-3 mb-3">
+                    <h3 class="h6 mb-1">{{ ride.origin }} to {{ ride.destination }}</h3>
+                    <p class="small text-secondary mb-2">Finalized {{ ride.finalized_at|date:'M d, Y H:i' }}</p>
+                    <p class="small text-secondary mb-2"><strong>Stops:</strong> {% for stop in ride.pickup_locations %}{{ stop }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                    <p class="small mb-2">Passengers:</p>
+                    <ul class="small text-secondary mb-0">
+                        {% for participant in ride.participants.all %}
+                            <li>
+                                {{ participant.user.get_full_name|default:participant.user.username }}
+                                - {{ participant.payment_status }}
+                            </li>
+                        {% empty %}
+                            <li>No passengers joined this ride.</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+            {% empty %}
+                <p class="text-secondary mb-0">No completed rides as driver yet.</p>
+            {% endfor %}
+        </section>
+    </div>
+
+    <div class="col-xl-6">
+        <section class="card shell-card p-4 h-100">
+            <h2 class="h5 text-warning mb-3">Completed as Passenger</h2>
+            {% for entry in completed_as_passenger %}
+                <article class="inner-panel p-3 mb-3">
+                    <h3 class="h6 mb-1">{{ entry.ride.origin }} to {{ entry.ride.destination }}</h3>
+                    <ul class="list-unstyled small text-secondary mb-3">
+                        <li><strong>Driver:</strong> {{ entry.ride.driver.get_full_name|default:entry.ride.driver.username }}</li>
+                        <li><strong>Fare:</strong> ${{ entry.ride.fare_per_seat }}</li>
+                        <li><strong>Stops:</strong> {% for stop in entry.ride.pickup_locations %}{{ stop }}{% if not forloop.last %}, {% endif %}{% endfor %}</li>
+                        <li><strong>Status:</strong> {{ entry.payment_status }}</li>
+                    </ul>
+                    {% if entry.payment_status == 'PENDING' %}
+                        <form method="post" action="{% url 'rides:simulate_payment' entry.ride.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-warning btn-sm" type="submit">Simulate Payment</button>
+                        </form>
+                    {% else %}
+                        <span class="badge text-bg-success">Paid at {{ entry.paid_at|date:'M d, Y H:i' }}</span>
+                    {% endif %}
+                </article>
+            {% empty %}
+                <p class="text-secondary mb-0">No completed rides as passenger yet.</p>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+{% endblock %}

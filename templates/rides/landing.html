@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <section class="card shell-card p-4 p-md-5 text-center">
+            <span class="badge text-bg-warning mb-3 px-3 py-2">University Carpool Platform</span>
+            <h1 class="display-6 fw-semibold mb-3">Share rides smarter, safer, and faster.</h1>
+            <p class="text-secondary mb-4">
+                Create rides, join available seats, track your active trips, and complete payment simulation after ride finalization.
+            </p>
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                <a class="btn btn-warning px-4" href="{% url 'login' %}">Login</a>
+                <a class="btn btn-outline-warning px-4" href="{% url 'rides:signup' %}">Create Account</a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
