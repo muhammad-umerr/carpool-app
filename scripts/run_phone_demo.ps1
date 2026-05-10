@@ -1,6 +1,21 @@
-Set-Location "c:\Users\umerm\Desktop\carpool-app"
+# Determine project root (parent of this script's folder) and switch to it
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$projectRoot = Resolve-Path (Join-Path $scriptDir '..')
+Set-Location $projectRoot.Path
 
-$pythonExe = "c:\Users\umerm\Desktop\carpool-app\.venv\Scripts\python.exe"
+# Determine python executable: prefer env override, then .venv, then system `python`
+if ($env:PHONE_DEMO_PYTHON) {
+    $pythonExe = $env:PHONE_DEMO_PYTHON
+} else {
+    $venvPython = Join-Path $projectRoot.Path '.venv\Scripts\python.exe'
+    if (Test-Path $venvPython) {
+        $pythonExe = $venvPython
+    } else {
+        $pythonExe = 'python'
+    }
+}
+
+Write-Host "Using Python: $pythonExe" -ForegroundColor DarkCyan
 
 function Get-PhoneDemoIp {
     param(

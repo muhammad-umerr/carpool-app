@@ -1,0 +1,108 @@
+Project setup and run instructions
+
+Prerequisites
+- Windows or Linux/macOS with Python 3.10+ installed
+- Git (to clone the repo) if pulling from remote
+- (Optional for MySQL) MySQL server installed and running
+
+Quick overview
+This project is a Django 5 app. The recommended local workflow is:
+1) create and activate a virtual environment
+2) install Python dependencies from `requirements.txt`
+3) configure the database (MySQL or SQLite)
+4) run migrations and create a superuser
+5) start the development server
+
+Full step-by-step (Windows PowerShell)
+
+1) Clone / copy the project
+   # clone repo (example)
+   git clone <repo-url> carpool-app
+   Set-Location "C:\Users\umerm\Desktop\carpool-app"
+
+2) Create and activate a virtual environment (recommended)
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+
+3) Upgrade packaging tools and install dependencies
+   # upgrade pip/setuptools/wheel first
+   python -m pip install --upgrade pip setuptools wheel
+   # install project deps
+   python -m pip install -r .\requirements.txt
+   # If you see errors mentioning `cryptography`, run:
+   python -m pip install cryptography
+   # On Windows, if cryptography fails to build, install Visual C++ Build Tools
+   # See: https://learn.microsoft.com/visualstudio/build-tools/
+
+4) Database options (choose one)
+
+Option A — MySQL (original project config)
+- Install MySQL server and start it.
+- Create database and user (run in MySQL client):
+  CREATE DATABASE carpool_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+  CREATE USER 'carpool_user'@'localhost' IDENTIFIED BY 'carpool_password';
+  GRANT ALL PRIVILEGES ON carpool_db.* TO 'carpool_user'@'localhost';
+  FLUSH PRIVILEGES;
+- Set environment variables (PowerShell):
+  $env:MYSQL_DATABASE="carpool_db"
+  $env:MYSQL_USER="carpool_user"
+  $env:MYSQL_PASSWORD="carpool_password"
+  $env:MYSQL_HOST="127.0.0.1"
+  $env:MYSQL_PORT="3306"
+
+Option B — SQLite (no DB server required, quick local dev)
+- Edit `config/settings.py` and replace the `DATABASES` block with the following snippet:
+
+  DATABASES = {
+      'default': {
+          'ENGINE': 'django.db.backends.sqlite3',
+          'NAME': BASE_DIR / 'db.sqlite3',
+      }
+  }
+
+  # Save the file and continue.
+
+5) Run migrations and create a superuser
+   # from project root, with venv active
+   python manage.py migrate
+   python manage.py createsuperuser
+
+6) Run the development server
+   python manage.py runserver
+   # Open http://127.0.0.1:8000 in your browser
+
+7) Phone demo (serve on local network)
+   # prints the local Wi?Fi IP and starts instructions for using the app on another device
+   powershell -ExecutionPolicy Bypass -File ".\scripts\run_phone_demo.ps1"
+
+8) Run tests and checks
+   python manage.py check
+   python manage.py test
+
+Troubleshooting notes
+- If `python manage.py migrate` fails with a DB connection error:
+  - confirm your DB server is running and credentials/env vars are correct
+  - for MySQL, confirm `PyMySQL` is installed (it's in `requirements.txt`)
+- If `cryptography` fails to install on Windows:
+  - upgrade pip/setuptools/wheel (step 3)
+  - install Visual C++ Build Tools
+  - if a Rust toolchain is mentioned, install Rust only if required
+
+Useful commands summary (PowerShell, from project root)
+  .\.venv\Scripts\Activate.ps1
+  python -m pip install --upgrade pip setuptools wheel
+  python -m pip install -r .\requirements.txt
+  python manage.py migrate
+  python manage.py createsuperuser
+  python manage.py runserver
+
+Files referenced
+- `config/settings.py` — database and Django settings
+- `requirements.txt` — Python dependencies
+- `scripts/run_phone_demo.ps1` — helper to expose server on local Wi?Fi
+
+If you want, I can also:
+- create a quick patch switching `config/settings.py` to the SQLite config for local dev,
+- or generate a short script that sets up the venv and runs the install commands automatically.
+
+End of instructions
